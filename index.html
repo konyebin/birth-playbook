@@ -166,6 +166,7 @@ padding:4px 12px;font-size:13px;color:var(--muted);margin:3px 3px 0 0}
 <section class="tabpane" id="pane-prep">
 <div class="eyebrow">Phase 1 · Before Labor</div>
 <p class="note" style="margin-bottom:4px">Goal: reduce stress and eliminate unnecessary decisions. Knock these out before 37 weeks.</p>
+<div class="card" id="syncCard"></div>
 <div id="prepLists"></div>
 <div class="card">
 <h2>Know the stages</h2>
@@ -395,6 +396,7 @@ padding:4px 12px;font-size:13px;color:var(--muted);margin:3px 3px 0 0}
 <button data-pane="home"><span class="ic">🏠</span>Home</button>
 </nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ================= storage: window.storage -> localStorage -> memory ================= */
 const mem = {};
@@ -403,11 +405,15 @@ if (window.storage){ try{ const r = await window.storage.get(k); if(r&&r.value!=
 try{ const v = localStorage.getItem(k); if(v!=null) return JSON.parse(v);}catch(e){}
 return (k in mem)? mem[k] : null;
 }
-async function sset(k,v){
+async function persistLocal(k,v){
 const s = JSON.stringify(v);
 if (window.storage){ try{ await window.storage.set(k,s); return;}catch(e){} }
 try{ localStorage.setItem(k,s); return;}catch(e){}
 mem[k]=v;
+}
+async function sset(k,v){
+await persistLocal(k,v);
+pushRemote(k,v); // mirror to the shared room when sync is on (no-op otherwise)
 }
 
 /* ================= state ================= */
@@ -422,6 +428,12 @@ set:{firstBaby:'yes'},
 tab:'prep'
 };
 let liveStart=null, liveTick=null, feedStart=null, feedSide=null, feedTick=null;
+
+/* ---- cloud sync state ---- */
+const SUPA_URL='https://aytdzqafsuuqndsdfznm.supabase.co';
+const SUPA_KEY='sb_publishable_IlV1dRV5zC6J6sRBPe0hiw_OY9lnPWn';
+const SYNC_KEYS=['bp-checks','bp-needs','bp-daily','bp-ctx','bp-baby','bp-birth','bp-set'];
+let sb=null, myUid=null, roomId=null, chan=null, syncStatus='off';
 
 /* ================= content ================= */
 const PREP = [
@@ -709,6 +721,129 @@ if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus
 else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
 }
 
+/* ================= cloud sync (supabase) ================= */
+function sliceFor(k){
+return ({'bp-checks':S.checks,'bp-needs':S.needs,'bp-daily':S.daily,'bp-ctx':S.contractions,'bp-baby':S.baby,'bp-birth':S.birth,'bp-set':S.set})[k];
+}
+function pushRemote(k,v){
+if(!sb||!roomId||SYNC_KEYS.indexOf(k)<0) return;
+sb.from('playbook_state').upsert({room_id:roomId,key:k,value:v,updated_by:myUid,updated_at:new Date().toISOString()},{onConflict:'room_id,key'})
+.then(({error})=>{ if(error) console.warn('sync push',k,error.message); });
+}
+function applyRemote(k,value){
+switch(k){
+case 'bp-checks': S.checks=value||{}; persistLocal(k,S.checks); renderAllLists(); break;
+case 'bp-needs': S.needs=value||{}; persistLocal(k,S.needs); renderNeeds(); break;
+case 'bp-daily': S.daily=value||{date:'',items:{}}; persistLocal(k,S.daily); renderDaily(); break;
+case 'bp-ctx': S.contractions=value||[]; persistLocal(k,S.contractions); renderContractions(); break;
+case 'bp-baby': S.baby=value||[]; persistLocal(k,S.baby); renderBaby(); break;
+case 'bp-birth': S.birth=value||null; persistLocal(k,S.birth); renderBirth(); break;
+case 'bp-set': S.set=value||{firstBaby:'yes'}; persistLocal(k,S.set); renderSet(); renderContractions(); break;
+}
+}
+async function initSupabase(){
+if(!window.supabase) return;
+try{
+sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+const { data:{ session } }=await sb.auth.getSession();
+if(session&&session.user){ myUid=session.user.id; }
+else{
+const { data, error }=await sb.auth.signInAnonymously();
+if(error){ console.warn('anon sign-in:',error.message); sb=null; return; }
+myUid=data.user.id;
+}
+}catch(e){ console.warn('supabase init failed',e); sb=null; }
+}
+async function pullAll(){
+const { data, error }=await sb.from('playbook_state').select('key,value').eq('room_id',roomId);
+if(error){ console.warn('sync pull',error.message); return; }
+(data||[]).forEach(r=>applyRemote(r.key,r.value));
+}
+async function pushAll(){
+for(const k of SYNC_KEYS){
+const { error }=await sb.from('playbook_state').upsert({room_id:roomId,key:k,value:sliceFor(k),updated_by:myUid,updated_at:new Date().toISOString()},{onConflict:'room_id,key'});
+if(error) console.warn('sync seed',k,error.message);
+}
+}
+function subscribeRoom(){
+if(!sb||!roomId) return;
+if(chan){ sb.removeChannel(chan); chan=null; }
+chan=sb.channel('room-'+roomId)
+.on('postgres_changes',{event:'*',schema:'public',table:'playbook_state',filter:'room_id=eq.'+roomId},payload=>{
+const row=payload.new; if(!row||payload.eventType==='DELETE') return;
+if(row.updated_by&&row.updated_by===myUid) return; // skip our own echo
+applyRemote(row.key,row.value);
+})
+.subscribe(status=>{
+if(status==='SUBSCRIBED') setSyncStatus('live');
+else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT') setSyncStatus('error');
+});
+}
+async function createRoom(){
+if(!sb||!myUid){ alert('Sync is still starting up — give it a second and try again.'); return; }
+setSyncStatus('connecting');
+const { data, error }=await sb.rpc('create_room');
+if(error){ console.warn('create_room',error.message); setSyncStatus('error'); alert('Could not start a room: '+error.message); return; }
+roomId=data; await persistLocal('bp-room',roomId);
+await pushAll(); subscribeRoom(); renderSync();
+}
+async function joinRoom(id){
+if(!sb||!myUid){ alert('Sync is still starting up — give it a second and try again.'); return; }
+setSyncStatus('connecting');
+const { error }=await sb.rpc('join_room',{p_room_id:id});
+if(error){ console.warn('join_room',error.message); setSyncStatus('error'); alert('Could not join that room: '+error.message); return; }
+roomId=id; await persistLocal('bp-room',roomId);
+await pullAll(); subscribeRoom(); renderSync();
+}
+async function reconnectRoom(id){
+roomId=id; setSyncStatus('connecting');
+await pullAll(); subscribeRoom(); renderSync();
+}
+async function leaveRoom(){
+if(chan){ sb.removeChannel(chan); chan=null; }
+roomId=null; await persistLocal('bp-room',null);
+setSyncStatus('off'); renderSync();
+}
+function joinFromInput(){
+const v=(document.getElementById('joinInput').value||'').trim();
+const m=v.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+if(!m){ alert('That does not look like a valid room link or code.'); return; }
+joinRoom(m[0]);
+}
+function inviteLink(){ return location.origin+location.pathname+'#room='+roomId; }
+function copyInvite(){
+const link=inviteLink();
+const done=()=>{ const m=document.getElementById('inviteMsg'); if(m) m.textContent='Copied ✓  '+link; };
+if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(done).catch(done); }
+else done();
+}
+function setSyncStatus(s){ syncStatus=s; renderSync(); }
+function renderSync(){
+const el=document.getElementById('syncCard'); if(!el) return;
+if(!window.supabase){
+el.innerHTML='<h2>Sync</h2><p class="note">Sync is offline right now (no connection). The app still works on this device and will reconnect automatically.</p>'; return;
+}
+if(!myUid){
+el.innerHTML='<h2>Sync across devices</h2><p class="note" style="color:var(--red)">Couldn\'t start sync. In Supabase, check that <b>Anonymous sign-ins</b> are enabled (Authentication → Sign In / Providers), then reload.</p>'; return;
+}
+if(syncStatus==='live'&&roomId){
+el.innerHTML='<h2>Sync <span class="tally" style="color:var(--sage)">● live</span></h2>'+
+'<p class="note">Sharing live with anyone who has your room link.</p>'+
+'<div class="btnrow"><button class="act primary" onclick="copyInvite()">Copy invite link</button></div>'+
+'<p class="note" id="inviteMsg" style="word-break:break-all">'+inviteLink()+'</p>'+
+'<div class="btnrow"><button class="act" onclick="leaveRoom()">Stop syncing here</button></div>';
+} else if(syncStatus==='connecting'){
+el.innerHTML='<h2>Sync</h2><p class="note">Connecting…</p>';
+} else {
+const err=syncStatus==='error'?'<p class="note" style="color:var(--red)">Connection problem — check your network and try again.</p>':'';
+el.innerHTML='<h2>Sync across devices</h2>'+err+
+'<p class="note">Share this playbook live with your partner. Start a room, then send them the link.</p>'+
+'<div class="btnrow"><button class="act primary" onclick="createRoom()">Start a shared room</button></div>'+
+'<p class="note">Got a link from your partner? Paste it here:</p>'+
+'<div class="setrow"><input id="joinInput" placeholder="paste room link or code" style="flex:2"><button class="act" style="flex:1" onclick="joinFromInput()">Join</button></div>';
+}
+}
+
 /* ================= boot ================= */
 (async function(){
 S.checks = (await sget('bp-checks'))||{};
@@ -727,6 +862,13 @@ if(liveCtx){ liveStart=liveCtx; startContractionUI(); }
 const liveFeed = await sget('bp-live-feed');
 if(liveFeed && liveFeed.start){ feedStart=liveFeed.start; feedSide=liveFeed.side; startFeedUI();
 document.getElementById('feedHint').textContent='Feeding… tap the same button to log it.'; }
+
+// cloud sync: sign in, then resume a saved room or accept an invite link
+await initSupabase();
+renderSync();
+const invite=(location.hash.match(/room=([0-9a-f-]{36})/i)||[])[1];
+if(invite){ history.replaceState(null,'',location.pathname+location.search); await joinRoom(invite); }
+else { const savedRoom=await sget('bp-room'); if(savedRoom){ await reconnectRoom(savedRoom); } }
 
 setTab(tab);
 setInterval(renderContractions, 60e3); // keep last-hour stats fresh
