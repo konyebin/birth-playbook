@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Birth Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+--ink:#11151C; /* field-manual night */
+--panel:#1A202B;
+--panel-2:#212938;
+--line:#2E3848;
+--paper:#F2EDE4; /* warm off-white text */
+--muted:#94A0B3;
+--amber:#E8A33D; /* primary action / focus */
+--sage:#5FA98E; /* done / good */
+--red:#E0564B; /* warnings ONLY */
+--red-deep:#3A1714;
+--radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--ink);color:var(--paper);
+font-family:'Barlow',-apple-system,'Segoe UI',Roboto,sans-serif;font-size:17px;line-height:1.45}
+h1,h2,h3,.disp{font-family:'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.02em;text-transform:uppercase;margin:0}
+button{font-family:inherit;color:inherit;border:none;background:none;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* ---------- shell ---------- */
+#app{max-width:560px;margin:0 auto;padding:0 14px 96px}
+header.top{position:sticky;top:0;z-index:30;background:linear-gradient(var(--ink) 75%,rgba(17,21,28,0));
+padding:14px 0 10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;flex-direction:column}
+.brand h1{font-size:26px;font-weight:700;line-height:1}
+.brand .sub{font-size:12px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
+#sosBtn{background:var(--red);color:#fff;font-family:'Barlow Condensed';font-weight:700;font-size:17px;
+letter-spacing:.06em;text-transform:uppercase;padding:12px 18px;border-radius:999px;flex-shrink:0;
+box-shadow:0 2px 12px rgba(224,86,75,.35)}
+
+/* ---------- tab bar ---------- */
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:40;background:var(--panel);
+border-top:1px solid var(--line);display:flex;justify-content:space-around;
+padding:8px 4px calc(10px + env(safe-area-inset-bottom))}
+nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+padding:8px 2px;color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border-radius:10px}
+nav.tabs button .ic{font-size:21px;line-height:1}
+nav.tabs button.on{color:var(--amber)}
+nav.tabs button.on .ic{transform:translateY(-1px)}
+
+/* ---------- cards / sections ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+padding:16px;margin:14px 0}
+.card h2{font-size:21px;font-weight:700;color:var(--paper);display:flex;align-items:center;gap:8px}
+.card h2 .tally{margin-left:auto;font-size:14px;color:var(--muted);font-family:'Barlow';font-weight:500;letter-spacing:0;text-transform:none}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-weight:600;margin-bottom:4px}
+.note{color:var(--muted);font-size:14px;margin:6px 0 0}
+details.card summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+details.card summary::-webkit-details-marker{display:none}
+details.card summary::after{content:"+";margin-left:auto;font-size:24px;color:var(--muted);font-family:'Barlow Condensed'}
+details.card[open] summary::after{content:"–"}
+details.card summary h2{flex:1;display:flex;align-items:center;gap:8px}
+
+/* ---------- checklist ---------- */
+.chk{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+padding:13px 10px;margin:2px -10px;border-radius:10px;font-size:17px;min-height:50px}
+.chk:active{background:var(--panel-2)}
+.chk .box{width:26px;height:26px;border-radius:8px;border:2px solid var(--muted);flex-shrink:0;
+display:flex;align-items:center;justify-content:center;font-size:16px;color:transparent;transition:all .15s}
+.chk.done .box{background:var(--sage);border-color:var(--sage);color:#0d1410}
+.chk.done .lbl{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(148,160,179,.6)}
+.chk .txt{display:flex;flex-direction:column;gap:2px;text-align:left}
+.chk .how{font-size:13.5px;color:var(--muted);line-height:1.35}
+details.donewrap{margin-top:10px;border-top:1px dashed var(--line);padding-top:6px}
+details.donewrap summary{list-style:none;cursor:pointer;font-size:12px;letter-spacing:.14em;
+text-transform:uppercase;color:var(--sage);font-weight:600;padding:8px 0}
+details.donewrap summary::-webkit-details-marker{display:none}
+details.donewrap summary::before{content:"▸ "}
+details.donewrap[open] summary::before{content:"▾ "}
+.progress{height:5px;background:var(--panel-2);border-radius:99px;margin-top:10px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--sage);border-radius:99px;transition:width .25s}
+
+/* ---------- scripts (say / never say) ---------- */
+.say,.nosay{border-radius:10px;padding:12px 14px;margin:8px 0;font-size:16px}
+.say{background:rgba(95,169,142,.12);border:1px solid rgba(95,169,142,.4)}
+.nosay{background:rgba(224,86,75,.10);border:1px solid rgba(224,86,75,.35)}
+.say b,.nosay b{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.say b{color:var(--sage)}.nosay b{color:var(--red)}
+
+/* ---------- timer ---------- */
+#bigTap{width:100%;min-height:240px;border-radius:20px;border:2px solid var(--line);
+background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;
+gap:8px;margin:14px 0;transition:all .2s;user-select:none}
+#bigTap .state{font-family:'Barlow Condensed';font-size:22px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#bigTap .clock{font-variant-numeric:tabular-nums;font-size:64px;font-weight:600;font-family:'Barlow Condensed';line-height:1}
+#bigTap.live{background:linear-gradient(160deg,#2A2310,#1A202B 70%);border-color:var(--amber)}
+#bigTap.live .state{color:var(--amber)}
+.statrow{display:flex;gap:10px}
+.stat{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;text-align:center}
+.stat .v{font-family:'Barlow Condensed';font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+#ruleBanner{display:none;background:rgba(232,163,61,.14);border:1px solid var(--amber);color:var(--amber);
+border-radius:var(--radius);padding:14px;margin:12px 0;font-weight:600;text-align:center}
+#ruleBanner.go{display:block}
+#ruleBanner.warn{background:var(--red-deep);border-color:var(--red);color:#fff}
+.setrow{display:flex;align-items:center;gap:10px;margin:10px 0}
+.setrow label{flex:1;font-size:15px;color:var(--muted)}
+.setrow input,.setrow select{flex:1.2;background:var(--panel-2);border:1px solid var(--line);color:var(--paper);
+border-radius:10px;padding:11px;font-size:16px;font-family:inherit}
+.tellrow{display:flex;justify-content:space-between;padding:10px 4px;border-bottom:1px solid var(--line);font-size:16px}
+.tellrow:last-child{border-bottom:none}
+.tellrow b{color:var(--amber);font-weight:600}
+.loglist{margin:0;padding:0;list-style:none}
+.loglist li{display:flex;justify-content:space-between;padding:10px 4px;border-bottom:1px solid var(--line);
+font-variant-numeric:tabular-nums;font-size:15px;color:var(--muted)}
+.loglist li b{color:var(--paper);font-weight:500}
+
+/* ---------- quick action buttons ---------- */
+.btnrow{display:flex;gap:10px;margin:10px 0}
+.act{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;
+padding:16px 8px;text-align:center;font-family:'Barlow Condensed';font-size:18px;font-weight:600;
+letter-spacing:.05em;text-transform:uppercase;min-height:58px}
+.act:active{background:var(--line)}
+.act.primary{background:var(--amber);color:#1a1304;border-color:var(--amber)}
+.act.live{background:rgba(232,163,61,.15);border-color:var(--amber);color:var(--amber)}
+
+/* ---------- warning overlay ---------- */
+#sos{position:fixed;inset:0;z-index:100;background:var(--ink);display:none;overflow-y:auto;padding:18px 16px 60px}
+#sos.open{display:block}
+#sos .wrap{max-width:560px;margin:0 auto}
+#sos h2{color:var(--red);font-size:30px}
+.warncard{background:var(--red-deep);border:1px solid rgba(224,86,75,.5);border-radius:var(--radius);padding:16px;margin:14px 0}
+.warncard h3{color:var(--red);font-size:19px;margin-bottom:8px}
+.warncard ul{margin:0;padding-left:20px;font-size:16px}
+.warncard ul li{margin:5px 0}
+.warncard .call{margin-top:10px;font-weight:600;color:#fff;font-size:15px}
+#closeSos{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+padding:16px;font-family:'Barlow Condensed';font-size:18px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-top:8px}
+
+/* ---------- postpartum ---------- */
+.daybadge{display:flex;align-items:baseline;gap:12px}
+.daybadge .n{font-family:'Barlow Condensed';font-size:58px;font-weight:700;color:var(--amber);line-height:1}
+.daybadge .phase{font-size:15px;color:var(--paper);font-weight:600}
+.daybadge .phase small{display:block;color:var(--muted);font-weight:400;font-size:13px}
+input[type="datetime-local"],input[type="date"]{background:var(--panel-2);border:1px solid var(--line);
+color:var(--paper);border-radius:10px;padding:12px;font-size:16px;width:100%;font-family:inherit}
+.mantra{border-left:3px solid var(--amber);padding:4px 0 4px 14px;margin:12px 0;font-size:17px}
+.mantra small{display:block;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px}
+.pill{display:inline-block;background:var(--panel-2);border:1px solid var(--line);border-radius:99px;
+padding:4px 12px;font-size:13px;color:var(--muted);margin:3px 3px 0 0}
+.tabpane{display:none}.tabpane.on{display:block}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+<header class="top">
+<div class="brand">
+<h1>Birth Playbook</h1>
+<div class="sub">Protect · Advocate · Care · Run logistics</div>
+</div>
+<button id="sosBtn" onclick="openSos()">⚠ Signs</button>
+</header>
+
+<!-- ============ PREP ============ -->
+<section class="tabpane" id="pane-prep">
+<div class="eyebrow">Phase 1 · Before Labor</div>
+<p class="note" style="margin-bottom:4px">Goal: reduce stress and eliminate unnecessary decisions. Knock these out before 37 weeks.</p>
+<div id="prepLists"></div>
+<div class="card">
+<h2>Know the stages</h2>
+<div class="say"><b>Early labor — stay relaxed</b>Time contractions · keep her eating &amp; drinking · keep things normal.</div>
+<div class="say"><b>Active labor — stay focused</b>Water · walking · counter pressure · encourage rest between waves.</div>
+<div class="say"><b>Transition — stay calm</b>Expect crying, shaking, nausea, self-doubt. This means baby is close.</div>
+<div class="nosay"><b>Never say</b>"It's almost over."</div>
+<div class="say"><b>Say instead</b>"You're safe." · "You can do this." · "I'm here."</div>
+</div>
+<div class="mantra"><small>Mantra</small>Prepare, don't panic.</div>
+</section>
+
+<!-- ============ LABOR ============ -->
+<section class="tabpane" id="pane-labor">
+<div class="eyebrow">Phases 2–4 · Labor → Golden Hour</div>
+<p class="note" style="margin-bottom:4px">Goal: protect her energy, then protect bonding.</p>
+
+<div class="card">
+<h2>Hourly needs check <span class="tally" id="needsTally"></span></h2>
+<p class="note">Run this every hour. Tap reset each round.</p>
+<div id="needsList"></div>
+<div class="btnrow"><button class="act" onclick="resetNeeds()">Reset hour</button></div>
+</div>
+
+<div class="card">
+<h2>During contractions</h2>
+<div class="say"><b>Do</b>Breathe with her · eye contact · counter pressure · hold her hand · encourage.</div>
+<div class="nosay"><b>Don't</b>Panic · tell her to calm down · complain · ask too many questions.</div>
+</div>
+
+<div class="card">
+<h2>Advocate — before any intervention</h2>
+<p class="note">Ask the team, out loud:</p>
+<div class="say"><b>The four questions</b>What are the <b style="display:inline;letter-spacing:0;text-transform:none">benefits</b>? The risks? The alternatives? Can we wait?</div>
+<div class="say"><b>If birth changes</b>Induction ≠ failure. Epidural ≠ failure. C-section ≠ failure. Healthy mom + healthy baby is the mission.</div>
+</div>
+
+<div id="laborLists"></div>
+
+<div class="card">
+<h2>Pushing — what to say</h2>
+<div class="say"><b>Say</b>"You're doing amazing." · "You're so strong." · "Our baby is almost here."</div>
+<p class="note">Encourage · hold her hand · wipe her face · give ice · celebrate progress.</p>
+</div>
+
+<div class="mantra"><small>Mantra</small>Stay calm when she can't. Confidence over coaching.</div>
+</section>
+
+<!-- ============ TIMER ============ -->
+<section class="tabpane" id="pane-timer">
+<div class="eyebrow">Contraction Timer</div>
+<button id="bigTap" onclick="toggleContraction()">
+<span class="state" id="tapState">Tap when a contraction starts</span>
+<span class="clock" id="tapClock">0:00</span>
+<span class="note" id="tapHint">One thumb. That's all it takes.</span>
+</button>
+<div id="ruleBanner" role="alert"></div>
+<div class="statrow">
+<div class="stat"><div class="v" id="stAvgGap">–</div><div class="k">Apart (avg)</div></div>
+<div class="stat"><div class="v" id="stAvgDur">–</div><div class="k">Length (avg)</div></div>
+<div class="stat"><div class="v" id="stCount">0</div><div class="k">Last hour</div></div>
+</div>
+
+<div class="card">
+<h2>Detection setup <span class="tally" id="weeksNow"></span></h2>
+<div class="setrow"><label for="dueDate">Due date</label><input type="date" id="dueDate" onchange="saveSet()"></div>
+<div class="setrow"><label for="firstBaby">First baby?</label>
+<select id="firstBaby" onchange="saveSet()"><option value="yes">Yes</option><option value="no">No</option></select></div>
+<div class="setrow"><label for="gbs">Group B Strep</label>
+<select id="gbs" onchange="saveSet()"><option value="">Unknown</option><option>Negative</option><option>Positive</option></select></div>
+<p class="note">Used to auto-flag the midwife's call criteria below from your contraction log.</p>
+</div>
+
+<div class="card">
+<h2>Call the on-call midwife if</h2>
+<ul class="loglist" style="font-size:15px">
+<li><span><b>Auto:</b> under 37 weeks — contractions every ~10 min that won't stop with rest and lots of fluids</span></li>
+<li><span><b>Auto:</b> 37+ weeks — every 5 min, lasting 45–60 sec, for at least an hour</span></li>
+<li><span><b>Auto:</b> not your first baby — painful, regular contractions every 7–10 min</span></li>
+<li><span><b>You judge:</b> contractions just as strong lying down as when up walking</span></li>
+<li><span><b>You judge:</b> her water breaks — note the time and fluid color</span></li>
+</ul>
+<p class="note">You may still be able to stay home a while — but call and let them know how she's doing.</p>
+</div>
+
+<div class="card">
+<h2>When you call, tell them</h2>
+<div class="tellrow"><span>Due date</span><b id="tellDue">Set above</b></div>
+<div class="tellrow"><span>Group B Strep status</span><b id="tellGbs">Set above</b></div>
+<div class="tellrow"><span>Water broken?</span><b>If yes — what color is the fluid?</b></div>
+<div class="tellrow"><span>Contractions</span><b id="tellCtx">–</b></div>
+</div>
+<div class="card">
+<h2>Recent contractions</h2>
+<ul class="loglist" id="ctxLog"><li>No contractions logged yet.</li></ul>
+<div class="btnrow">
+<button class="act" onclick="undoContraction()">Undo last</button>
+<button class="act" onclick="clearContractions()">Clear all</button>
+</div>
+</div>
+<p class="note">Averages use the last 60 minutes. "Apart" is start-to-start. Early labor: contractions are irregular — keep her relaxed, fed, hydrated.</p>
+</section>
+
+<!-- ============ BABY ============ -->
+<section class="tabpane" id="pane-baby">
+<div class="eyebrow">Phase 5+ · Baby Tracker</div>
+<div class="statrow">
+<div class="stat"><div class="v" id="stFeeds">0</div><div class="k">Feeds today</div></div>
+<div class="stat"><div class="v" id="stWet">0</div><div class="k">Wet today</div></div>
+<div class="stat"><div class="v" id="stDirty">0</div><div class="k">Dirty today</div></div>
+</div>
+
+<div class="card">
+<h2>Feeding <span class="tally" id="lastFeed"></span></h2>
+<div class="btnrow">
+<button class="act" id="feedL" onclick="feedTap('Left')">Left</button>
+<button class="act" id="feedR" onclick="feedTap('Right')">Right</button>
+<button class="act" id="feedB" onclick="feedTap('Bottle')">Bottle</button>
+</div>
+<p class="note" id="feedHint">Tap to start a feed timer. Tap again to log it.</p>
+<p class="note">Every feed, bring her: water · snack · burp cloth · pillow · baby. Take baby afterward when you can.</p>
+</div>
+
+<div class="card">
+<h2>Diapers</h2>
+<div class="btnrow">
+<button class="act" onclick="diaperTap('Wet')">Wet</button>
+<button class="act" onclick="diaperTap('Dirty')">Dirty</button>
+<button class="act" onclick="diaperTap('Both')">Both</button>
+</div>
+<p class="note">Fewer wet diapers than usual is a warning sign — tap ⚠ Signs up top if worried.</p>
+</div>
+
+<div class="card">
+<h2>Recent log</h2>
+<ul class="loglist" id="babyLog"><li>Nothing logged yet.</li></ul>
+<div class="btnrow"><button class="act" onclick="undoBaby()">Undo last</button></div>
+</div>
+
+<div id="babyLists"></div>
+</section>
+
+<!-- ============ HOME ============ -->
+<section class="tabpane" id="pane-home">
+<div class="eyebrow">Phases 6–9 · Recovery at Home</div>
+
+<div class="card">
+<h2>Mom's recovery — 5·5·5</h2>
+<div class="daybadge" id="dayBadge" style="display:none">
+<div class="n" id="dayNum">–</div>
+<div class="phase" id="dayPhase">–<small id="dayHint"></small></div>
+</div>
+<div id="birthInputWrap">
+<p class="note" style="margin-bottom:8px">Set the birth date to start the recovery clock:</p>
+<input type="date" id="birthDate" onchange="saveBirth()">
+</div>
+<p class="note">5 days <b>in</b> the bed · 5 days <b>on</b> the bed · 5 days <b>around</b> the bed. Your job: make rest possible.</p>
+</div>
+
+<div class="card">
+<h2>Today — you own this <span class="tally" id="dailyTally"></span></h2>
+<p class="note">Resets every morning. Don't wait to be asked.</p>
+<div id="dailyList"></div>
+</div>
+
+<div class="card">
+<h2>Say this, not "what can I do?"</h2>
+<div class="say"><b>Scripts</b>"I've got the baby." · "Go shower." · "Take a nap." · "I ordered dinner." · "I'll handle the dishes."</div>
+</div>
+
+<div class="card">
+<h2>Take care of yourself</h2>
+<p class="note">Eat. Sleep when you can. Accept help. Take breaks. Talk to someone if you're struggling. A healthy father is a better husband and dad.</p>
+<div style="margin-top:8px">
+<span class="pill">Be present</span><span class="pill">Be proactive</span>
+<span class="pill">Be flexible</span><span class="pill">Be her safe place</span>
+</div>
+</div>
+
+<div class="mantra"><small>The message your presence sends</small>"You are safe. You're not alone. We're doing this together."</div>
+</section>
+</div>
+
+<!-- ============ WARNING OVERLAY ============ -->
+<div id="sos" role="dialog" aria-modal="true" aria-label="Warning signs">
+<div class="wrap">
+<h2>Warning signs — act, don't wait</h2>
+<div class="warncard">
+<h3>Mom — call 911 / OB now</h3>
+<ul>
+<li>Heavy bleeding (soaking a pad in an hour)</li>
+<li>Fever</li><li>Chest pain or trouble breathing</li>
+<li>Severe headache or vision changes</li>
+<li>Severe swelling or severe abdominal pain</li>
+<li>Foul-smelling discharge</li>
+</ul>
+<div class="call">When in doubt, call. You will never regret the call you made.</div>
+</div>
+<div class="warncard">
+<h3>Mom — mental health</h3>
+<ul>
+<li>Baby blues beyond ~2 weeks</li>
+<li>Hopelessness, rage, withdrawal</li>
+<li>Extreme anxiety, can't sleep even when baby sleeps</li>
+<li>Thoughts of harm, or hallucinations → immediate help</li>
+</ul>
+<div class="call">This is medical, not a mood. Call her OB or the 988 line. You watching for this IS the job.</div>
+</div>
+<div class="warncard">
+<h3>Baby — call the pediatrician</h3>
+<ul>
+<li>Fever (rectal 100.4°F+ under 3 months = ER)</li>
+<li>Poor feeding or fewer wet diapers</li>
+<li>Blue coloring or trouble breathing</li>
+<li>Extreme sleepiness / hard to wake</li>
+</ul>
+</div>
+<button id="closeSos" onclick="closeSos()">Close</button>
+</div>
+</div>
+
+<nav class="tabs" id="tabs">
+<button data-pane="prep"><span class="ic">📋</span>Prep</button>
+<button data-pane="labor"><span class="ic">🛡️</span>Labor</button>
+<button data-pane="timer"><span class="ic">⏱️</span>Timer</button>
+<button data-pane="baby"><span class="ic">👶</span>Baby</button>
+<button data-pane="home"><span class="ic">🏠</span>Home</button>
+</nav>
+
+<script>
+/* ================= storage: window.storage -> localStorage -> memory ================= */
+const mem = {};
+async function sget(k){
+if (window.storage){ try{ const r = await window.storage.get(k); if(r&&r.value!=null) return JSON.parse(r.value);}catch(e){} }
+try{ const v = localStorage.getItem(k); if(v!=null) return JSON.parse(v);}catch(e){}
+return (k in mem)? mem[k] : null;
+}
+async function sset(k,v){
+const s = JSON.stringify(v);
+if (window.storage){ try{ await window.storage.set(k,s); return;}catch(e){} }
+try{ localStorage.setItem(k,s); return;}catch(e){}
+mem[k]=v;
+}
+
+/* ================= state ================= */
+let S = {
+checks:{}, // checklist item states, keyed by id
+needs:{}, // hourly needs toggles
+daily:{date:'',items:{}},
+contractions:[], // {s,e}
+baby:[], // {t,type:'feed'|'diaper',detail,dur?}
+birth:null,
+set:{firstBaby:'yes'},
+tab:'prep'
+};
+let liveStart=null, liveTick=null, feedStart=null, feedSide=null, feedTick=null;
+
+/* ================= content ================= */
+const PREP = [
+{id:'pref', t:"Mom's preferences", items:["Pain management preferences","Who will be present","Music / lighting preferences","Delayed cord clamping","Skin-to-skin","Feeding preferences","Vitamin K, eye ointment, Hep B decisions","Circumcision preference (if applicable)","Visitor expectations"]},
+{id:'hosp', t:"Hospital logistics", items:["Hospital route driven once","Parking figured out","After-hours entrance located","Insurance cards packed","Pediatrician selected","Car seat installed & checked","Pet care arranged","Childcare arranged"]},
+{id:'dbag', t:"Dad's bag", items:["Two changes of clothes","Hoodie","Pillow","Toiletries","Phone charger","Portable battery","Water bottle","Snacks","Cash / cards","Medications"]},
+{id:'mbag', t:"Mom's extras", items:["Chapstick","Hair ties","Slippers","Nursing bra","Going-home outfit","Favorite blanket"]},
+{id:'comf', t:"Comfort measures — practice these", items:[
+{t:"Hip squeezes", how:"From behind her, palms flat on the outside of each hip. Press inward, firm and steady, through the whole contraction."},
+{t:"Counter pressure", how:"Heel of your hand or fist pressed hard into her sacrum (lower back) during a contraction. Harder than you think — ask 'more or less?'"},
+{t:"Lower back massage", how:"Between contractions: slow, firm circles with palms or thumbs on her lower back. Use lotion. Check pressure."},
+{t:"Breathing together", how:"Lock eyes. Breathe slow and audible — in for 4 through the nose, out for 6 through the mouth. She matches you."},
+{t:"Birth ball support", how:"She sits on the ball rocking hips in circles or figure-8s. You steady her shoulders or add counter pressure."},
+{t:"Position changes", how:"Suggest a new position every 30–45 min: walk, side-lie, hands-and-knees, squat. Movement helps baby descend."}
+]}
+];
+const LABOR = [
+{id:'gate', t:"Gatekeeper — protect against", items:["Too many visitors","Family texting her phone (route to yours)","Unwanted photos","Unnecessary interruptions"]},
+{id:'move', t:"Help labor progress — rotate positions", items:["Walking","Birth ball","Side lying","Hands and knees","Squatting"]},
+{id:'gold', t:"Golden hour — protect bonding", items:["Skin-to-skin","Breastfeeding attempt","Quiet environment","A few photos","Feed mom: water, electrolytes, protein, favorite meal","Then rest"]}
+];
+const BABYL = [
+{id:'own', t:"Own these in the hospital", items:["Diapers","Swaddling","Burping","Baby soothing","Skin-to-skin","Tracking feedings"]},
+{id:'nurse', t:"Learn from the nurses before discharge", items:["Swaddle technique","Bathing","Umbilical cord care","Safe sleep setup","Feeding cues"]}
+];
+const NEEDS = ["Food?","Water?","Bathroom?","Comfort?","Temperature?","Position change?"];
+const DAILY = ["Laundry","Dishes","Trash","Groceries / supplies","Meals handled","Cleaning pass","Visitors managed","Pet care","Mom got a shower or nap","Self-check: did I eat & rest?"];
+
+/* ================= render helpers ================= */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function checkRow(id,item,done){
+const t = (typeof item==='string')? item : item.t;
+const how = (typeof item==='object' && item.how)? `<span class="how">${esc(item.how)}</span>` : '';
+return `<button class="chk ${done?'done':''}" aria-pressed="${done}" onclick="flip('${id}')">
+<span class="box" aria-hidden="true">✓</span><span class="txt"><span class="lbl">${esc(t)}</span>${how}</span></button>`;
+}
+function renderListGroup(targetId, groups){
+document.getElementById(targetId).innerHTML = groups.map(g=>{
+const rows = g.items.map((it,i)=>({it, id:g.id+'-'+i, done:!!S.checks[g.id+'-'+i]}));
+const done = rows.filter(r=>r.done), pend = rows.filter(r=>!r.done);
+return `<details class="card" ${pend.length?'open':''}>
+<summary><h2>${esc(g.t)} <span class="tally">${done.length}/${rows.length}</span></h2></summary>
+<div class="progress"><i style="width:${100*done.length/rows.length}%"></i></div>
+${pend.map(r=>checkRow(r.id,r.it,false)).join('') || '<p class="note">All done here. 💪</p>'}
+${done.length?`<details class="donewrap"><summary>Completed · ${done.length}</summary>${done.map(r=>checkRow(r.id,r.it,true)).join('')}</details>`:''}
+</details>`;
+}).join('');
+}
+async function flip(id){
+S.checks[id] = !S.checks[id];
+await sset('bp-checks',S.checks);
+renderAllLists();
+}
+function renderAllLists(){
+renderListGroup('prepLists',PREP);
+renderListGroup('laborLists',LABOR);
+renderListGroup('babyLists',BABYL);
+}
+
+/* ================= hourly needs ================= */
+function renderNeeds(){
+const el=document.getElementById('needsList');
+el.innerHTML = NEEDS.map((n,i)=>{
+const done=!!S.needs[i];
+return `<button class="chk ${done?'done':''}" aria-pressed="${done}" onclick="flipNeed(${i})">
+<span class="box" aria-hidden="true">✓</span><span class="lbl">${n}</span></button>`;
+}).join('');
+const c=NEEDS.filter((_,i)=>S.needs[i]).length;
+document.getElementById('needsTally').textContent=c+'/'+NEEDS.length;
+}
+async function flipNeed(i){ S.needs[i]=!S.needs[i]; await sset('bp-needs',S.needs); renderNeeds(); }
+async function resetNeeds(){ S.needs={}; await sset('bp-needs',S.needs); renderNeeds(); }
+
+/* ================= daily (resets per day) ================= */
+function todayStr(){ return new Date().toDateString(); }
+function renderDaily(){
+if (S.daily.date!==todayStr()){ S.daily={date:todayStr(),items:{}}; sset('bp-daily',S.daily); }
+const rows = DAILY.map((n,i)=>({n,i,done:!!S.daily.items[i]}));
+const done = rows.filter(r=>r.done), pend = rows.filter(r=>!r.done);
+const row = r=>`<button class="chk ${r.done?'done':''}" aria-pressed="${r.done}" onclick="flipDaily(${r.i})">
+<span class="box" aria-hidden="true">✓</span><span class="txt"><span class="lbl">${r.n}</span></span></button>`;
+document.getElementById('dailyList').innerHTML =
+(pend.map(row).join('') || '<p class="note">House handled. Go sit with your family. 💪</p>') +
+(done.length?`<details class="donewrap"><summary>Completed · ${done.length}</summary>${done.map(row).join('')}</details>`:'');
+document.getElementById('dailyTally').textContent=done.length+'/'+DAILY.length;
+}
+async function flipDaily(i){ S.daily.items[i]=!S.daily.items[i]; await sset('bp-daily',S.daily); renderDaily(); }
+
+/* ================= 5-5-5 ================= */
+async function saveBirth(){
+const v=document.getElementById('birthDate').value;
+if(!v) return;
+S.birth=v; await sset('bp-birth',v); renderBirth();
+}
+function renderBirth(){
+if(!S.birth) return;
+document.getElementById('birthDate').value=S.birth;
+const days = Math.floor((Date.now()-new Date(S.birth+'T00:00:00').getTime())/864e5)+1;
+let phase,hint;
+if(days<=5){phase='In the bed';hint='She rests. You run everything else.';}
+else if(days<=10){phase='On the bed';hint='Light movement only. Keep owning the house.';}
+else if(days<=15){phase='Around the bed';hint='Short walks, no lifting, no hosting.';}
+else {phase='Beyond — keep it gradual';hint='Recovery isn’t finished at two weeks. Keep checking in.';}
+document.getElementById('dayBadge').style.display='flex';
+document.getElementById('dayNum').textContent='Day '+Math.max(days,1);
+document.getElementById('dayPhase').firstChild.textContent=phase;
+document.getElementById('dayHint').textContent=hint;
+}
+
+/* ================= contraction timer ================= */
+function fmt(ms){ const s=Math.round(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function fmtT(t){ return new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}); }
+function startContractionUI(){
+const tap=document.getElementById('bigTap');
+tap.classList.add('live');
+document.getElementById('tapState').textContent='Contraction in progress — tap when it ends';
+document.getElementById('tapHint').textContent='Breathe with her. Eyes on her, not the screen.';
+document.getElementById('tapClock').textContent=fmt(Date.now()-liveStart);
+liveTick=setInterval(()=>{ document.getElementById('tapClock').textContent=fmt(Date.now()-liveStart); },250);
+}
+function resetContractionUI(){
+const tap=document.getElementById('bigTap');
+tap.classList.remove('live');
+document.getElementById('tapState').textContent='Tap when a contraction starts';
+document.getElementById('tapClock').textContent='0:00';
+document.getElementById('tapHint').textContent='Logged. Back to her.';
+}
+function toggleContraction(){
+if(!liveStart){
+liveStart=Date.now();
+sset('bp-live-ctx',liveStart);
+startContractionUI();
+} else {
+clearInterval(liveTick); liveTick=null;
+S.contractions.push({s:liveStart,e:Date.now()});
+liveStart=null;
+sset('bp-live-ctx',null);
+sset('bp-ctx',S.contractions);
+resetContractionUI();
+renderContractions();
+}
+}
+function undoContraction(){ S.contractions.pop(); sset('bp-ctx',S.contractions); renderContractions(); }
+function clearContractions(){ if(confirm('Clear all contraction history?')){ S.contractions=[]; sset('bp-ctx',S.contractions); renderContractions(); } }
+function renderContractions(){
+const log=document.getElementById('ctxLog');
+const cs=S.contractions;
+log.innerHTML = cs.length? cs.slice(-8).reverse().map((c,idx,arr)=>{
+const i = cs.length-1-idx;
+const gap = i>0 ? fmt(c.s-cs[i-1].s)+' apart' : '—';
+return `<li><b>${fmtT(c.s)}</b><span>${fmt(c.e-c.s)} long</span><span>${gap}</span></li>`;
+}).join('') : '<li>No contractions logged yet.</li>';
+
+// last-hour stats
+const hr = cs.filter(c=>c.s>Date.now()-36e5);
+document.getElementById('stCount').textContent=hr.length;
+let avgGap=null,avgDur=null;
+if(hr.length){ avgDur = hr.reduce((a,c)=>a+(c.e-c.s),0)/hr.length; }
+if(hr.length>1){ let g=0; for(let i=1;i<hr.length;i++) g+=hr[i].s-hr[i-1].s; avgGap=g/(hr.length-1); }
+document.getElementById('stAvgGap').textContent = avgGap? fmt(avgGap):'–';
+document.getElementById('stAvgDur').textContent = avgDur? fmt(avgDur):'–';
+document.getElementById('tellCtx').textContent = avgGap? fmt(avgGap)+' apart · '+fmt(avgDur)+' long' : 'None yet';
+
+// ----- midwife call criteria detection -----
+const span = hr.length>1 ? (hr[hr.length-1].s-hr[0].s) : 0;
+let weeks=null;
+if(S.set.due){ weeks = 40 - (new Date(S.set.due+'T00:00:00').getTime()-Date.now())/(7*864e5); }
+const banner=document.getElementById('ruleBanner');
+let msg=null, preterm=false;
+if(avgGap && avgDur){
+if(weeks!==null && weeks<37 && avgGap<=10.5*60e3 && span>=30*60e3 && hr.length>=4){
+msg='Under 37 weeks with contractions ~every 10 min that aren\'t stopping. Rest + lots of fluids — if they continue, CALL NOW.';
+preterm=true;
+} else if(avgGap<=5.5*60e3 && avgDur>=45e3 && span>=55*60e3 && hr.length>=8){
+msg='Pattern reached: ~5 min apart, 45–60 sec long, for an hour. Call the on-call midwife.';
+} else if(S.set.firstBaby==='no' && avgGap<=10.5*60e3 && span>=45*60e3 && hr.length>=5){
+msg='Not your first baby + regular contractions every 7–10 min. Time to call.';
+}
+}
+banner.textContent = msg||'';
+banner.classList.toggle('go',!!msg);
+banner.classList.toggle('warn',preterm);
+}
+
+/* ================= detection settings ================= */
+async function saveSet(){
+S.set = {
+due: document.getElementById('dueDate').value || null,
+firstBaby: document.getElementById('firstBaby').value,
+gbs: document.getElementById('gbs').value
+};
+await sset('bp-set',S.set);
+renderSet(); renderContractions();
+}
+function renderSet(){
+if(S.set.due){ document.getElementById('dueDate').value=S.set.due;
+const w = 40 - (new Date(S.set.due+'T00:00:00').getTime()-Date.now())/(7*864e5);
+document.getElementById('weeksNow').textContent = w>0? w.toFixed(1)+' weeks' : '';
+document.getElementById('tellDue').textContent = new Date(S.set.due+'T00:00:00').toLocaleDateString();
+}
+if(S.set.firstBaby) document.getElementById('firstBaby').value=S.set.firstBaby;
+if(S.set.gbs){ document.getElementById('gbs').value=S.set.gbs; document.getElementById('tellGbs').textContent=S.set.gbs; }
+}
+
+/* ================= baby tracker ================= */
+function startFeedUI(){
+const btn=document.getElementById('feed'+feedSide[0]);
+btn.classList.add('live');
+btn.textContent=feedSide+' '+fmt(Date.now()-feedStart);
+feedTick=setInterval(()=>{ btn.textContent=feedSide+' '+fmt(Date.now()-feedStart); },1000);
+}
+function resetFeedButtons(){
+['L','R','B'].forEach(x=>{const b=document.getElementById('feed'+x); b.classList.remove('live'); b.textContent=({L:'Left',R:'Right',B:'Bottle'})[x];});
+}
+function feedTap(side){
+if(feedStart && feedSide===side){
+// stop & log
+const dur=Date.now()-feedStart;
+S.baby.push({t:feedStart,type:'feed',detail:side,dur});
+sset('bp-baby',S.baby);
+clearInterval(feedTick); feedStart=null; feedSide=null;
+sset('bp-live-feed',null);
+resetFeedButtons();
+document.getElementById('feedHint').textContent='Logged. Tap to start the next one.';
+renderBaby();
+} else if(!feedStart){
+feedStart=Date.now(); feedSide=side;
+sset('bp-live-feed',{start:feedStart,side:feedSide});
+startFeedUI();
+document.getElementById('feedHint').textContent='Feeding… tap the same button to log it.';
+}
+}
+function diaperTap(kind){
+S.baby.push({t:Date.now(),type:'diaper',detail:kind});
+sset('bp-baby',S.baby);
+renderBaby();
+}
+function undoBaby(){ S.baby.pop(); sset('bp-baby',S.baby); renderBaby(); }
+function renderBaby(){
+const today=new Date().toDateString();
+const tEntries=S.baby.filter(b=>new Date(b.t).toDateString()===today);
+document.getElementById('stFeeds').textContent = tEntries.filter(b=>b.type==='feed').length;
+document.getElementById('stWet').textContent = tEntries.filter(b=>b.type==='diaper'&&(b.detail==='Wet'||b.detail==='Both')).length;
+document.getElementById('stDirty').textContent = tEntries.filter(b=>b.type==='diaper'&&(b.detail==='Dirty'||b.detail==='Both')).length;
+const feeds=S.baby.filter(b=>b.type==='feed');
+document.getElementById('lastFeed').textContent = feeds.length? 'last: '+fmtT(feeds[feeds.length-1].t)+' · '+feeds[feeds.length-1].detail : '';
+const log=document.getElementById('babyLog');
+log.innerHTML = S.baby.length? S.baby.slice(-10).reverse().map(b=>
+`<li><b>${fmtT(b.t)}</b><span>${b.type==='feed'?'Feed · '+b.detail+(b.dur?' · '+fmt(b.dur):''):'Diaper · '+b.detail}</span></li>`
+).join('') : '<li>Nothing logged yet.</li>';
+}
+
+/* ================= tabs & sos ================= */
+function setTab(name){
+S.tab=name; sset('bp-tab',name);
+document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('on',p.id==='pane-'+name));
+document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.pane===name));
+window.scrollTo(0,0);
+}
+document.getElementById('tabs').addEventListener('click',e=>{
+const b=e.target.closest('button'); if(b) setTab(b.dataset.pane);
+});
+let sosLastFocus=null;
+function openSos(){
+const sos=document.getElementById('sos');
+sosLastFocus=document.activeElement;
+sos.classList.add('open');
+document.getElementById('closeSos').focus();
+document.addEventListener('keydown',sosKey);
+}
+function closeSos(){
+const sos=document.getElementById('sos');
+sos.classList.remove('open');
+document.removeEventListener('keydown',sosKey);
+if(sosLastFocus && sosLastFocus.focus) sosLastFocus.focus();
+}
+function sosKey(e){
+if(e.key==='Escape'){ closeSos(); return; }
+if(e.key!=='Tab') return;
+const sos=document.getElementById('sos');
+const f=sos.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+if(!f.length) return;
+const first=f[0], last=f[f.length-1];
+if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+}
+
+/* ================= boot ================= */
+(async function(){
+S.checks = (await sget('bp-checks'))||{};
+S.needs = (await sget('bp-needs'))||{};
+S.daily = (await sget('bp-daily'))||{date:'',items:{}};
+S.contractions = (await sget('bp-ctx'))||[];
+S.baby = (await sget('bp-baby'))||[];
+S.birth = (await sget('bp-birth'))||null;
+S.set = (await sget('bp-set'))||{firstBaby:'yes'};
+const tab = (await sget('bp-tab'))||'prep';
+renderAllLists(); renderNeeds(); renderDaily(); renderSet(); renderContractions(); renderBaby(); renderBirth();
+
+// resume any in-progress timers that survived a reload / backgrounding
+const liveCtx = await sget('bp-live-ctx');
+if(liveCtx){ liveStart=liveCtx; startContractionUI(); }
+const liveFeed = await sget('bp-live-feed');
+if(liveFeed && liveFeed.start){ feedStart=liveFeed.start; feedSide=liveFeed.side; startFeedUI();
+document.getElementById('feedHint').textContent='Feeding… tap the same button to log it.'; }
+
+setTab(tab);
+setInterval(renderContractions, 60e3); // keep last-hour stats fresh
+})();
+</script>
+</body>
+</html>
