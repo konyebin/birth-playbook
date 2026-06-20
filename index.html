@@ -224,6 +224,8 @@ padding:4px 12px;font-size:13px;color:var(--muted);margin:3px 3px 0 0}
 <span class="note" id="tapHint">One thumb. That's all it takes.</span>
 </button>
 <div id="ruleBanner" role="alert"></div>
+<p class="note" id="bannerNote" style="margin-top:8px;text-align:center">A helper, not a substitute for your own judgment — a quiet banner isn't a green light. When in doubt, call.</p>
+<p class="note" id="dueNote" style="margin-top:6px"></p>
 <div class="statrow">
 <div class="stat"><div class="v" id="stAvgGap">–</div><div class="k">Apart (avg)</div></div>
 <div class="stat"><div class="v" id="stAvgDur">–</div><div class="k">Length (avg)</div></div>
@@ -607,7 +609,7 @@ if(avgGap && avgDur){
 if(weeks!==null && weeks<37 && avgGap<=10.5*60e3 && span>=30*60e3 && hr.length>=4){
 msg='Under 37 weeks with contractions ~every 10 min that aren\'t stopping. Rest + lots of fluids — if they continue, CALL NOW.';
 preterm=true;
-} else if(avgGap<=5.5*60e3 && avgDur>=45e3 && span>=55*60e3 && hr.length>=8){
+} else if(avgGap<=6*60e3 && avgDur>=40e3 && span>=45*60e3 && hr.length>=6){
 msg='Pattern reached: ~5 min apart, 45–60 sec long, for an hour. Call the on-call midwife.';
 } else if(S.set.firstBaby==='no' && avgGap<=10.5*60e3 && span>=45*60e3 && hr.length>=5){
 msg='Not your first baby + regular contractions every 7–10 min. Time to call.';
@@ -616,6 +618,8 @@ msg='Not your first baby + regular contractions every 7–10 min. Time to call.'
 banner.textContent = msg||'';
 banner.classList.toggle('go',!!msg);
 banner.classList.toggle('warn',preterm);
+const dn=document.getElementById('dueNote');
+if(dn) dn.textContent = S.set.due ? '' : 'Tip: add a due date in Detection setup below to switch on under-37-week (preterm) alerts.';
 }
 
 /* ================= detection settings ================= */
